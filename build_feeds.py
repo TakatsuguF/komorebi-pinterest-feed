@@ -63,6 +63,9 @@ COUNTRIES = {
     "austria": "EUR",
     "switzerland": "CHF",
     "hungary": "HUF",
+    # ブラジル: Pinterestに削除できないブラジルロックのデータソースが残っており、
+    # 空フィードだとエラーになるため正規のBRLフィードを供給して無害化(2026-07-07 Taka決定)。
+    "brazil": "BRL",
 }
 
 HEADERS = [

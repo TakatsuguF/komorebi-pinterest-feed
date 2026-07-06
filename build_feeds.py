@@ -251,7 +251,10 @@ def write_feeds(rows, rates):
             w = csv.writer(f)
             w.writerow(HEADERS)
             for r in rows:
-                price = round(r["price_jpy"] * rate, 2)
+                # price は「金額 通貨コード」形式にする(例: "12345.00 IDR")。
+                # 通貨コードが無いとPinterestが通貨を判別できず、データソースの
+                # 国/地域と不一致になり全商品に通貨ミスマッチ警告が付く(2026-07-07判明)。
+                price = f'{round(r["price_jpy"] * rate, 2)} {currency}'
                 w.writerow([
                     r["id"], r["item_group_id"], r["variant_names"], r["variant_values"],
                     r["title"], r["link"], r["image_link"], price,

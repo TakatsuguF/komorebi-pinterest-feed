@@ -30,6 +30,14 @@ API_VERSION = "2026-01"
 PRICE_MARKUP = 1.02  # 旧シート: 商品リスト_成形!I = Variant Price * 1.02
 BRAND = "Komorebi Stationery"
 
+# 非公開商品の除外タグ。
+# TAKETORI等の「抽選販売(Lottery Sales)」限定品は status=ACTIVE かつ Admin API の
+# onlineStoreUrl/publishedAt が値を返す(=Shopify的には公開扱い)のに、実店頭では
+# テーマ側で隠され購入不可。標準の公開フラグでは判別できないため、Komorebi自身が
+# 付けているこのタグで除外する。将来 read_product_listings スコープを付与できれば
+# publishedOnCurrentPublication での厳密判定に置き換え可能。
+EXCLUDE_TAGS = {"Lottery Sales"}
+
 # 国別フィード: (出力ファイル名, 通貨コード) 旧シートの import用_XX タブと同一
 COUNTRIES = {
     "canada": "CAD",
@@ -124,6 +132,7 @@ query($cursor: String) {
       legacyResourceId
       isGiftCard
       title
+      tags
       onlineStoreUrl
       productType
       descriptionHtml
@@ -190,6 +199,8 @@ def build_base_rows():
                 continue  # オンラインストア未公開は除外
             if p.get("isGiftCard"):
                 continue  # ギフトカードはフィード対象外(旧フィードにも無し)
+            if EXCLUDE_TAGS & set(p.get("tags") or []):
+                continue  # 抽選販売等の非公開商品を除外
             n_products += 1
             category = (resolve_category((p["catFb"] or {}).get("value"), taxonomy)
                         or resolve_category((p["catGs"] or {}).get("value"), taxonomy))

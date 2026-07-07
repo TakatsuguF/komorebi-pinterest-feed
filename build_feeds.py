@@ -254,10 +254,12 @@ def write_feeds(rows, rates):
             w = csv.writer(f)
             w.writerow(HEADERS)
             for r in rows:
-                # price は「金額 通貨コード」形式にする(例: "12345.00 IDR")。
-                # 通貨コードが無いとPinterestが通貨を判別できず、データソースの
-                # 国/地域と不一致になり全商品に通貨ミスマッチ警告が付く(2026-07-07判明)。
-                price = f'{round(r["price_jpy"] * rate, 2)} {currency}'
+                # price は通貨コードを付けない「数値のみ」。通貨はデータソースの
+                # 国/地域からPinterestが決める。旧シートもこの形式で、既存の各国ソース
+                # (Italy/Hungary等)はこれで警告0のクリーン。
+                # 通貨コードを付けると逆に「価格フィールドの通貨が統一されていない」
+                # 警告(180)が出るため付けない(2026-07-07 実測で判明・付与を撤回)。
+                price = round(r["price_jpy"] * rate, 2)
                 w.writerow([
                     r["id"], r["item_group_id"], r["variant_names"], r["variant_values"],
                     r["title"], r["link"], r["image_link"], price,
